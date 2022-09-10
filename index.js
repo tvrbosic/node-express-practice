@@ -1,6 +1,8 @@
 const fs = require('fs');
 const http = require('http');
 const url = require('url');
+const slugify = require('slugify');
+const fillTemplateData = require('./modules/fillTemplateData');
 
 const overviewTemplate = fs.readFileSync(`${__dirname}/templates/overview.html`, 'utf-8');
 const productTemplate = fs.readFileSync(`${__dirname}/templates/product.html`, 'utf-8');
@@ -9,20 +11,9 @@ const cardTemplate = fs.readFileSync(`${__dirname}/templates/card.html`, 'utf-8'
 const data = fs.readFileSync(`${__dirname}/assets/json/data.json`, 'utf-8');
 const dataObject = JSON.parse(data);
 
-const fillTemplateData = (template, product) => {
-  let output = template.replace(/{%ID%}/g, product.id);
-  output = output.replace(/{%PRODUCT%}/g, product.productName);
-  output = output.replace(/{%IMAGE%}/g, product.image);
-  output = output.replace(/{%FROM%}/g, product.from);
-  output = output.replace(/{%NUTRIENTS%}/g, product.nutrients);
-  output = output.replace(/{%QUANTITY%}/g, product.quantity);
-  output = output.replace(/{%PRICE%}/g, product.price);
-  output = output.replace(/{%DESCRIPTION%}/g, product.description);
-  if (!product.organic) {
-    output = output.replace(/{%NOT_ORGANIC%}/g, 'not-organic');
-  }
-  return output;
-};
+// For demonstration - NOT NEEDED
+const slugs = dataObject.map((element) => slugify(element.productName, { lower: true }));
+console.log(slugs);
 
 const server = http.createServer((req, res) => {
   const { query, pathname } = url.parse(req.url, true);
