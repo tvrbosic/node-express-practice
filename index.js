@@ -1,1 +1,1 @@
-console.log('Node.js App');
+console.log('App');
