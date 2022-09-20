@@ -19,6 +19,7 @@
   "homepage": "https://github.com/tvrbosic/node-express-practice#readme",
   "dependencies": {
     "express": "^4.18.1",
+    "morgan": "^1.10.0",
     "slugify": "^1.6.5",
     "superagent": "^8.0.0"
   },
