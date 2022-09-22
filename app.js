@@ -6,21 +6,31 @@ const tourRouter = require('./routes/tourRouter');
 const userRouter = require('./routes/userRouter');
 
 // ######################## Middlewares ########################
-// Middleware function which parses incoming requests with JSON payloads and is based on body-parser
+console.log();
+if (process.env.NODE_ENV === 'development') {
+  // Logging
+  app.use(morgan('dev'));
+}
+
+// Parses incoming requests with JSON payloads and is based on body-parser
 app.use(express.json());
-app.use(morgan('dev'));
+
+// Server static files
+app.use(express.static(`${__dirname}/public`));
 
 // Custom middleware
 app.use((req, res, next) => {
   console.log('Custom middleware triggered!');
   next();
 });
+
 // Custom middleware
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
   next();
 });
 
+// Routes
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 
