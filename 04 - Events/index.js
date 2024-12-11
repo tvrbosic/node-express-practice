@@ -1,3 +1,6 @@
+// --------------------------------< EVENTS >--------------------------------
+// DETAILED DOCUMENTATION:  https://nodejs.org/api/events.html
+
 const EventEmitter = require('events');
 const http = require('http');
 

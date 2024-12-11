@@ -1,3 +1,6 @@
+// --------------------------------< STREAMS >--------------------------------
+// DETAILED DOCUMENTATION:  https://nodejs.org/api/stream.html
+
 const fs = require('fs');
 const http = require('http');
 
