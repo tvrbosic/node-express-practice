@@ -1,3 +1,30 @@
+/**
+  --------------------------------< EVENT LOOP PHASES >--------------------------------
+ 
+   ┌───────────────────────────┐
+┌─>│           timers          │
+│  └─────────────┬─────────────┘
+│  ┌─────────────┴─────────────┐
+│  │     pending callbacks     │
+│  └─────────────┬─────────────┘
+│  ┌─────────────┴─────────────┐
+│  │       idle, prepare       │
+│  └─────────────┬─────────────┘      ┌───────────────┐
+│  ┌─────────────┴─────────────┐      │   incoming:   │
+│  │           poll            │<─────┤  connections, │
+│  └─────────────┬─────────────┘      │   data, etc.  │
+│  ┌─────────────┴─────────────┐      └───────────────┘
+│  │           check           │
+│  └─────────────┬─────────────┘
+│  ┌─────────────┴─────────────┐
+└──┤      close callbacks      │
+   └───────────────────────────┘
+
+   NOTE: process.nextTick is called after each phase of event loop.
+
+   DETAILED DOCUMENTATION: https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick
+ */
+
 const fs = require('fs');
 const crypto = require('crypto');
 
