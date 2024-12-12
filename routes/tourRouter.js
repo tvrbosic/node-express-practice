@@ -2,11 +2,13 @@ const express = require('express');
 
 const tourController = require('../controllers/tourController');
 
-// ------------------------------------< Routes >------------------------------------
 const router = express.Router();
+
+// ------------------------------------< Parameter processing >------------------------------------
 
 router.param('id', tourController.checkId);
 
+// ------------------------------------< Routes >------------------------------------
 router
   .route('/')
   .get(tourController.getAllTours)
