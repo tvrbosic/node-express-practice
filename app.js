@@ -5,8 +5,7 @@ const app = express();
 const tourRouter = require('./routes/tourRouter');
 const userRouter = require('./routes/userRouter');
 
-// ######################## Middlewares ########################
-console.log();
+// ------------------------------------< Middlewares >------------------------------------
 if (process.env.NODE_ENV === 'development') {
   // Logging
   app.use(morgan('dev'));
@@ -18,7 +17,7 @@ app.use(express.json());
 // Server static files
 app.use(express.static(`${__dirname}/public`));
 
-// Custom middleware
+// Example custom middleware
 app.use((req, res, next) => {
   console.log('Custom middleware triggered!');
   next();
@@ -30,7 +29,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
+// ------------------------------------< Routes >------------------------------------
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 

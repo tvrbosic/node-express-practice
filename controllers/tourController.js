@@ -1,35 +1,11 @@
 const fs = require('fs');
 
-// ######################## Read data ########################
+// ------------------------------------< Read data >------------------------------------
 const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
 );
 
-exports.checkId = (req, res, next, val) => {
-  const id = val * 1;
-  const tour = tours.find((el) => el.id === id);
-
-  // Not found or invalid id
-  if (!tour) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Tour for given ID was not found!',
-    });
-  }
-  next();
-};
-
-exports.checkBody = (req, res, next) => {
-  if (!req.body.name || !req.body.price) {
-    return res.status(400).json({
-      status: 'fail',
-      message: 'Missing name or price!',
-    });
-  }
-  next();
-};
-
-// ######################## Handlers ########################
+// ------------------------------------< Handlers >------------------------------------
 exports.getAllTours = (req, res) => {
   res.status(200).json({
     status: 'success',
@@ -97,4 +73,29 @@ exports.deleteTour = (req, res) => {
     requestedAt: req.requestTime,
     data: null,
   });
+};
+
+// ------------------------------------< Validations >------------------------------------
+exports.checkId = (req, res, next, val) => {
+  const id = val * 1;
+  const tour = tours.find((el) => el.id === id);
+
+  // Not found or invalid id
+  if (!tour) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Tour for given ID was not found!',
+    });
+  }
+  next();
+};
+
+exports.checkBody = (req, res, next) => {
+  if (!req.body.name || !req.body.price) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Missing name or price!',
+    });
+  }
+  next();
 };

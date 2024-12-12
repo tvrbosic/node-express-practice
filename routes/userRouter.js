@@ -2,7 +2,7 @@ const express = require('express');
 
 const userController = require('../controllers/userController');
 
-// ######################## Routes ########################
+// ------------------------------------< Routes >------------------------------------
 const router = express.Router();
 
 router
@@ -15,5 +15,5 @@ router
   .patch(userController.updateUser)
   .delete(userController.deleteUser);
 
-// ######################## Exports ########################
+// ------------------------------------< Exports >------------------------------------
 module.exports = router;

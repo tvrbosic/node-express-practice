@@ -2,7 +2,7 @@ const express = require('express');
 
 const tourController = require('../controllers/tourController');
 
-// ######################## Routes ########################
+// ------------------------------------< Routes >------------------------------------
 const router = express.Router();
 
 router.param('id', tourController.checkId);
@@ -18,5 +18,5 @@ router
   .patch(tourController.updateTour)
   .delete(tourController.deleteTour);
 
-// ######################## Exports ########################
+// ------------------------------------< Exports >------------------------------------
 module.exports = router;
