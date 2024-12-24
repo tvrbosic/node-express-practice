@@ -1,36 +1,47 @@
 const Tour = require('../models/tourModel');
+/**
+ * REQUEST EXAMPLES:
+ * - Filtering: 127.0.0.1:8000/api/v1/tours?duration=5&difficulty=easy
+ * - Filtering and sorting: 127.0.0.1:8000/api/v1/tours?duration=5&difficulty=easy&sort=-price,ratingsAverage
+ */
 
-// ------------------------------------< Handlers >------------------------------------
+// =======================< Handlers >=======================
 exports.getAllTours = async (req, res) => {
   try {
-    console.log(req.query);
-
-    // BUILD QUERY
+    // -------------< BUILD QUERY >-------------
+    // 1) Basic filtering
     const queryParams = { ...req.query };
     const excludeFields = ['page', 'sort', 'limit', 'fields'];
     excludeFields.forEach((element) => {
       delete queryParams[element];
     });
 
+    // 2) Advanced filtering
     let queryParamsString = JSON.stringify(queryParams);
-    // Prepend every occurence of gte|gt|lte|lt with dollar sign
+
+    /**
+     * Prepend every occurence of gte|gt|lte|lt with dollar sign.
+     * This allows us to use MongoDB supported advanced filters on query.
+     */
     queryParamsString = queryParamsString.replace(
       /\b(gte|gt|lte|lt)\b/g,
       (match) => `$${match}`
     );
 
-    const toursQuery = await Tour.find(JSON.parse(queryParamsString));
+    let query = Tour.find(JSON.parse(queryParamsString));
 
-    // const toursQuery = await Tour.find()
-    //   .where('duration')
-    //   .equals(req.query.duration)
-    //   .where('difficulty')
-    //   .equals(req.query.difficulty);
+    // 3) Sorting
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(',').join(' ');
+      query = query.sort(sortBy);
+    } else {
+      query = query.sort('-createdAt');
+    }
 
-    // EXECUTE QUERY
-    const tours = await toursQuery;
+    // -------------< EXECUTE QUERY >-------------
+    const tours = await query;
 
-    // SEND RESPONSE
+    // -------------< SEND RESPONSE >-------------
     res.status(200).json({
       status: 'success',
       results: tours.length,

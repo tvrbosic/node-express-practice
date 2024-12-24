@@ -5,7 +5,7 @@ const app = express();
 const tourRouter = require('./routes/tourRouter');
 const userRouter = require('./routes/userRouter');
 
-// ------------------------------------< Middlewares >------------------------------------
+// =======================< Middlewares >=======================
 if (process.env.NODE_ENV === 'development') {
   // Logging
   app.use(morgan('dev'));
@@ -29,7 +29,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// ------------------------------------< Routers >------------------------------------
+// =======================< Routers >=======================
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 
