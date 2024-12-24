@@ -3,8 +3,34 @@ const Tour = require('../models/tourModel');
 // ------------------------------------< Handlers >------------------------------------
 exports.getAllTours = async (req, res) => {
   try {
-    const tours = await Tour.find();
+    console.log(req.query);
 
+    // BUILD QUERY
+    const queryParams = { ...req.query };
+    const excludeFields = ['page', 'sort', 'limit', 'fields'];
+    excludeFields.forEach((element) => {
+      delete queryParams[element];
+    });
+
+    let queryParamsString = JSON.stringify(queryParams);
+    // Prepend every occurence of gte|gt|lte|lt with dollar sign
+    queryParamsString = queryParamsString.replace(
+      /\b(gte|gt|lte|lt)\b/g,
+      (match) => `$${match}`
+    );
+
+    const toursQuery = await Tour.find(JSON.parse(queryParamsString));
+
+    // const toursQuery = await Tour.find()
+    //   .where('duration')
+    //   .equals(req.query.duration)
+    //   .where('difficulty')
+    //   .equals(req.query.difficulty);
+
+    // EXECUTE QUERY
+    const tours = await toursQuery;
+
+    // SEND RESPONSE
     res.status(200).json({
       status: 'success',
       results: tours.length,
