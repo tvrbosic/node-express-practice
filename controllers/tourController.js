@@ -118,3 +118,55 @@ exports.deleteTour = async (req, res) => {
     });
   }
 };
+
+exports.getTourStats = async (req, res) => {
+  try {
+    // Aggregation pipeline (https://www.mongodb.com/docs/manual/core/aggregation-pipeline/)
+    const stats = await Tour.aggregate([
+      {
+        $match: { ratingsAverage: { $gte: 4.5 } },
+      },
+      {
+        $group: {
+          // _id: null, // Every resulting record will have same id (null). All resulting records will be in same group.
+          _id: { $toUpper: '$difficulty' }, // Group resulting records by difficulty.
+          numberOfRatings: { $sum: '$ratingsQuantity' },
+          numberOfTours: { $sum: 1 }, // Add 1 for each document that will go through pipeline
+          averageRating: {
+            $avg: '$ratingsAverage',
+          },
+          averagePrice: {
+            $avg: '$price',
+          },
+          minPrice: {
+            $min: '$price',
+          },
+          maxPrice: {
+            $max: '$price',
+          },
+        },
+      },
+      {
+        // In this stage we need to use field names defined in previous stage (initial model fields does not exist in this stage)
+        $sort: {
+          averagePrice: 1,
+        },
+      },
+      // EXAMPLE: stages could be repeated (exclude EASY group)
+      // {
+      //   $match: {
+      //     _id: { $ne: 'EASY' },
+      //   },
+      // },
+    ]);
+    res.status(200).json({
+      status: 'success',
+      data: { stats },
+    });
+  } catch (err) {
+    res.status(404).json({
+      status: 'fail',
+      message: err,
+    });
+  }
+};
