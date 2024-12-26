@@ -1,4 +1,6 @@
 const Tour = require('../models/tourModel');
+const APIFeatures = require('../utils/apiFeatures');
+
 /**
  * REQUEST EXAMPLES:
  * - Filtering: 127.0.0.1:8000/api/v1/tours?duration=5&difficulty=easy
@@ -6,64 +8,25 @@ const Tour = require('../models/tourModel');
  * - Field limiting: 127.0.0.1:8000/api/v1/tours?fields=name,duration,difficulty,price
  */
 
-// =======================< Handlers >=======================
+// =======================< Route middlewares >=======================
+exports.aliasTop5ByRatingsAndPrice = (req, res, next) => {
+  req.query.limit = '5';
+  req.query.sort = '-ratingsAverage,price';
+  req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
+  next();
+};
+
+// =======================< Route handlers >=======================
 exports.getAllTours = async (req, res) => {
   try {
-    // -------------< BUILD QUERY >-------------
-    // 1) Basic filtering
-    const queryParams = { ...req.query };
-    const excludeFields = ['page', 'sort', 'limit', 'fields'];
-    excludeFields.forEach((element) => {
-      delete queryParams[element];
-    });
+    // -------------< BUILD AND EXECUTE QUERY >-------------
+    const apiFeatures = new APIFeatures(Tour.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
 
-    // 2) Advanced filtering
-    let queryParamsString = JSON.stringify(queryParams);
-
-    /**
-     * Prepend every occurence of gte|gt|lte|lt with dollar sign.
-     * This allows us to use MongoDB supported advanced filters on query.
-     */
-    queryParamsString = queryParamsString.replace(
-      /\b(gte|gt|lte|lt)\b/g,
-      (match) => `$${match}`
-    );
-
-    let query = Tour.find(JSON.parse(queryParamsString));
-
-    // 3) Sorting
-    if (req.query.sort) {
-      const sortBy = req.query.sort.split(',').join(' ');
-      query = query.sort(sortBy);
-    } else {
-      // Default: descending sort by createdAt
-      query = query.sort('-_id');
-    }
-
-    // 4) Field limiting
-    if (req.query.fields) {
-      const fields = req.query.fields.split(',').join(' ');
-      query = query.select(fields);
-    } else {
-      // Default: exclude field __v
-      query = query.select('-__v');
-    }
-
-    // 5) Pagination
-    const pageParam = req.query.page * 1 || 1; // Multiply by one to convert string to number. Set 1 as default if none specified.
-    const limitParam = req.query.limit * 1 || 100; // Multiply by one to convert string to number. Set 1 as default if none specified.
-    const recordsToSkip = (pageParam - 1) * limitParam;
-
-    query = query.skip(recordsToSkip).limit(limitParam);
-
-    if (req.query.page) {
-      const tourCount = await Tour.countDocuments();
-      if (recordsToSkip >= tourCount)
-        throw new Error('This page does not exist!');
-    }
-
-    // -------------< EXECUTE QUERY >-------------
-    const tours = await query;
+    const tours = await apiFeatures.query;
 
     // -------------< SEND RESPONSE >-------------
     res.status(200).json({
