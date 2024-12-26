@@ -3,6 +3,7 @@ const Tour = require('../models/tourModel');
  * REQUEST EXAMPLES:
  * - Filtering: 127.0.0.1:8000/api/v1/tours?duration=5&difficulty=easy
  * - Filtering and sorting: 127.0.0.1:8000/api/v1/tours?duration=5&difficulty=easy&sort=-price,ratingsAverage
+ * - Field limiting: 127.0.0.1:8000/api/v1/tours?fields=name,duration,difficulty,price
  */
 
 // =======================< Handlers >=======================
@@ -35,7 +36,30 @@ exports.getAllTours = async (req, res) => {
       const sortBy = req.query.sort.split(',').join(' ');
       query = query.sort(sortBy);
     } else {
-      query = query.sort('-createdAt');
+      // Default: descending sort by createdAt
+      query = query.sort('-_id');
+    }
+
+    // 4) Field limiting
+    if (req.query.fields) {
+      const fields = req.query.fields.split(',').join(' ');
+      query = query.select(fields);
+    } else {
+      // Default: exclude field __v
+      query = query.select('-__v');
+    }
+
+    // 5) Pagination
+    const pageParam = req.query.page * 1 || 1; // Multiply by one to convert string to number. Set 1 as default if none specified.
+    const limitParam = req.query.limit * 1 || 100; // Multiply by one to convert string to number. Set 1 as default if none specified.
+    const recordsToSkip = (pageParam - 1) * limitParam;
+
+    query = query.skip(recordsToSkip).limit(limitParam);
+
+    if (req.query.page) {
+      const tourCount = await Tour.countDocuments();
+      if (recordsToSkip >= tourCount)
+        throw new Error('This page does not exist!');
     }
 
     // -------------< EXECUTE QUERY >-------------
