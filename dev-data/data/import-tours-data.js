@@ -12,7 +12,10 @@ const Tour = require('../../models/tourModel');
 
 // ------------------< Load environment variables >------------------
 dotenv.config({ path: './config.env' });
-const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
+const DB = process.env.DATABASE.replace(
+  '<PASSWORD>',
+  process.env.DATABASE_PASSWORD
+);
 
 // --------------------< Connect database >--------------------
 mongoose.connect(DB).then(() => {
@@ -21,7 +24,7 @@ mongoose.connect(DB).then(() => {
 
 // --------------------< Functions >--------------------
 const importToursData = async () => {
-  const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours-simple.json`, 'utf-8'));
+  const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours.json`, 'utf-8'));
 
   try {
     await Tour.create(tours);
