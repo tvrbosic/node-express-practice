@@ -9,6 +9,8 @@ const tourSchema = new mongoose.Schema(
       required: [true, 'A tour must have a name.'],
       unique: true,
       trim: true,
+      maxLength: [75, 'A tour name must have less or equal to 75 characters.'],
+      minLength: [3, 'A tour name must have 3 or more characters.'],
     },
     slug: String,
     price: {
@@ -26,10 +28,16 @@ const tourSchema = new mongoose.Schema(
     difficulty: {
       type: String,
       required: [true, 'A tour must have difficulty defined.'],
+      enum: {
+        values: ['easy', 'medium', 'difficult'],
+        message: 'Difficulty is either: easy, medium, difficult.',
+      },
     },
     ratingsAverage: {
       type: Number,
       default: 4.5,
+      min: [1, 'Rating must be above or equal to 1.0.'],
+      max: [5, 'Rating must be below or equal to 5.0.'],
     },
     ratingsQuantity: {
       type: Number,
@@ -58,6 +66,10 @@ const tourSchema = new mongoose.Schema(
       select: false,
     },
     startDates: [Date],
+    secretTour: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     toJSON: {
@@ -79,6 +91,7 @@ tourSchema.virtual('durationWeeks').get(function () {
 // Mongoose has 4 types of middleware: document middleware, model middleware, aggregate middleware, and query middleware.
 
 // -------------< Document middleware >-------------
+// In Moongoose document middleware object 'this' represents document
 // PRE SAVE HOOK - runs before .save() and .create()  methods
 tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true });
@@ -95,6 +108,29 @@ tourSchema.pre('save', function (next) {
 //   console.log(doc);
 //   next();
 // });
+
+// -------------< Query middleware >-------------
+// Regex /^find/ used to cover all Moongoose methods that start with word find: find(), findOne(), findOneAndDelete(), findOneAndUpdate()
+// In Moongoose query middleware object 'this' represents query
+tourSchema.pre(/^find/, function (next) {
+  this.find({ secretTour: { $ne: true } }); // Get tours that are not secret
+  this.startTime = Date.now();
+  next();
+});
+
+tourSchema.post(/^find/, function (docs, next) {
+  console.log(`Query took ${Date.now() - this.startTime} ms`);
+  next();
+});
+
+// -------------< Aggregation middleware >-------------
+// In Moongoose aggregation middleware object 'this' represents aggregation
+tourSchema.pre('aggregate', function (next) {
+  this.pipeline().unshift({
+    $match: { secretTour: { $ne: true } },
+  });
+  next();
+});
 
 // =======================< Create model from schema >=======================
 const Tour = mongoose.model('Tour', tourSchema);

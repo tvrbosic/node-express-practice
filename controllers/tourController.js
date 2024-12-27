@@ -124,7 +124,7 @@ exports.getTourStats = async (req, res) => {
     // Aggregation pipeline (https://www.mongodb.com/docs/manual/core/aggregation-pipeline/)
     const stats = await Tour.aggregate([
       {
-        $match: { ratingsAverage: { $gte: 4.5 } },
+        $match: { ratingsAverage: { $gte: 3 } },
       },
       {
         $group: {
