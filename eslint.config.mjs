@@ -11,9 +11,9 @@ export default [
   },
   pluginJs.configs.recommended,
   eslintPluginPrettier,
-  // {
-  //   rules: {
-  //      ADD CUSTOM RULES
-  //   },
-  // },
+  {
+    rules: {
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
+  },
 ];
