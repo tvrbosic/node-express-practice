@@ -2,6 +2,8 @@ const express = require('express');
 const morgan = require('morgan');
 
 const app = express();
+const AppError = require('./utils/appError');
+const errorHandlingMiddleware = require('./middlewares/errorHandling');
 const tourRouter = require('./routes/tourRouter');
 const userRouter = require('./routes/userRouter');
 
@@ -17,12 +19,6 @@ app.use(express.json());
 // Server static files
 app.use(express.static(`${__dirname}/public`));
 
-// Example custom middleware
-app.use((req, res, next) => {
-  console.log('Custom middleware triggered!');
-  next();
-});
-
 // Custom middleware
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
@@ -32,5 +28,11 @@ app.use((req, res, next) => {
 // =======================< Routers >=======================
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
+app.all('*', (req, res, next) => {
+  next(new AppError(`Can't find ${req.originalUrl} on this server.`, 404));
+});
+
+// =======================< Global error handling middleware >=======================
+app.use(errorHandlingMiddleware);
 
 module.exports = app;
