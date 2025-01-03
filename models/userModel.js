@@ -32,6 +32,7 @@ const userSchema = new mongoose.Schema({
       message: 'Passwords do not match.',
     },
   },
+  passwordChangedAt: Date,
 });
 
 // =======================< Mongoose middlewares >=======================
@@ -54,6 +55,18 @@ userSchema.methods.comparePassword = async function (
   databasePassword
 ) {
   return await bcrypt.compare(inputPassword, databasePassword);
+};
+
+userSchema.methods.hasTokenPaswordChanged = function (JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    const passwordChangedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000
+    );
+    return JWTTimestamp < passwordChangedTimestamp;
+  }
+
+  // false means password has not been changed
+  return false;
 };
 
 // =======================< Create model from schema >=======================
