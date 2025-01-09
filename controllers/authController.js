@@ -16,6 +16,7 @@ exports.signup = catchAsync(async (req, res, _next) => {
     email: req.body.email,
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
+    role: req.body.role,
   });
 
   const token = generateToken(newUser._id);
@@ -88,7 +89,24 @@ exports.protectRoute = catchAsync(async (req, res, next) => {
       401
     );
 
-  // If code reaches this point then grant access to protected route (all checks have passed without errors). Attach user to request to make it available in following middlewares.
+  /**
+   * ==========| GRANT ACCESS TO PROTECTED ROUTE |==========
+   * If code reaches this point then grant access to protected route (all checks have passed without errors).
+   * Attach user to request to make it available in following middlewares.
+   */
   req.user = loggedUser;
   next();
 });
+
+// Create closure wrapper function because we need to pass parameters to middleware function
+exports.restrictTo = (...roles) => {
+  return (req, res, next) => {
+    // Roles is an array: ['admin', 'lead-guide']
+    if (!roles.includes(req.user.role))
+      return next(
+        new AppError('You do not have permission to perform this action', 403)
+      );
+
+    next();
+  };
+};
