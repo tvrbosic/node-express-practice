@@ -14,6 +14,13 @@ export default [
   {
     rules: {
       'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      'linebreak-style': ['error', 'windows'],
+      'prettier/prettier': [
+        'error',
+        {
+          endOfLine: 'auto',
+        },
+      ],
     },
   },
 ];
