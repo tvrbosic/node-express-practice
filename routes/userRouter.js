@@ -6,12 +6,20 @@ const authController = require('../controllers/authController');
 // =======================< Routes >=======================
 const router = express.Router();
 
+// Registration and login
 router.post('/signup', authController.signup);
 router.post('/login', authController.login);
 
+// Password operations
 router.post('/forgot-password', authController.forgotPassword);
 router.patch('/reset-password/:token', authController.resetPassword);
+router.patch(
+  '/update-password',
+  authController.protectRoute,
+  authController.updatePassword
+);
 
+// General user routes
 router
   .route('/')
   .get(userController.getAllUsers)

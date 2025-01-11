@@ -2,6 +2,7 @@
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 
 // APP
 const AppError = require('../utils/appError');
@@ -15,6 +16,18 @@ const generateToken = (id) => {
   });
 };
 
+const createAndSendToken = (user, statusCode, res) => {
+  const token = generateToken(user._id);
+
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+    data: {
+      user,
+    },
+  });
+};
+
 exports.signup = catchAsync(async (req, res, _next) => {
   const newUser = await User.create({
     name: req.body.name,
@@ -24,15 +37,7 @@ exports.signup = catchAsync(async (req, res, _next) => {
     role: req.body.role,
   });
 
-  const token = generateToken(newUser._id);
-
-  res.status(201).json({
-    status: 'success',
-    token,
-    data: {
-      user: newUser,
-    },
-  });
+  createAndSendToken(newUser, 201, res);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -48,12 +53,7 @@ exports.login = catchAsync(async (req, res, next) => {
   if (!user || !(await user.comparePassword(password, user.password)))
     return next(new AppError('Incorrect email or password!', 401));
 
-  // Send token to client
-  const token = generateToken(user._id);
-  res.status(200).json({
-    status: 'success',
-    token,
-  });
+  createAndSendToken(user, 200, res);
 });
 
 exports.protectRoute = catchAsync(async (req, res, next) => {
@@ -182,9 +182,22 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   await user.save();
 
   // 4) Log the user in and send JWT
-  const token = generateToken(user._id);
-  res.status(200).json({
-    status: 'success',
-    token,
-  });
+  createAndSendToken(user, 200, res);
+});
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  // 1) Get user from collection
+  const user = await User.findById(req.user.id).select('+password');
+
+  // 2) Check if posted password is correct
+  if (!(await user.comparePassword(req.body.currentPassword, user.password)))
+    return next(new AppError('Incorrect password provided.', 401));
+
+  // 3) If password is correct update the password (we set passwordConfirm to trigger model validation which will not be persisted in database)
+  user.password = req.body.newPassword;
+  user.passwordConfirm = req.body.newPasswordConfirm;
+  await user.save();
+
+  // 4) Log user in with new JWT token (new token required because password has been changed)
+  createAndSendToken(user, 200, res);
 });
