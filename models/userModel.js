@@ -57,6 +57,20 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
+userSchema.pre('save', async function (next) {
+  // Run this function if password was actually modified
+  if (!this.isModified('password') || this.isNew) return next();
+
+  /**
+   * Protect routes function definedin authController.js is  checking if user changed password after JWT was issued.
+   * This situation can happen because saving database changes could be slower than issuing new JTW token.
+   * To prevent situation where user would have outdated token we add 1 second to passwordChangedAt time.
+   */
+  this.passwordChangedAt = Date.now() - 1000;
+
+  next();
+});
+
 // =======================< Schema instance methods >=======================
 userSchema.methods.comparePassword = async function (
   inputPassword,
