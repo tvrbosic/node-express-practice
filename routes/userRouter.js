@@ -19,16 +19,21 @@ router.patch(
   authController.updatePassword
 );
 
-// General user routes
-router
-  .route('/')
-  .get(userController.getAllUsers)
-  .post(userController.createUser);
+// User routes
+router.patch(
+  '/update-authenticated',
+  authController.protectRoute,
+  userController.updateAuthenticatedUser
+);
 router
   .route('/:id')
   .get(userController.getUser)
   .patch(userController.updateUser)
   .delete(userController.deleteUser);
+router
+  .route('/')
+  .get(userController.getAllUsers)
+  .post(userController.createUser);
 
 // =======================< Exports >=======================
 module.exports = router;
