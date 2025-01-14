@@ -25,6 +25,11 @@ router.patch(
   authController.protectRoute,
   userController.updateAuthenticatedUser
 );
+router.delete(
+  '/delete-authenticated',
+  authController.protectRoute,
+  userController.deleteAuthenticatedUser
+);
 router
   .route('/:id')
   .get(userController.getUser)

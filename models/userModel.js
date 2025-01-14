@@ -41,6 +41,11 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
+  active: {
+    type: Boolean,
+    default: true,
+    select: false
+  }
 });
 
 // =======================< Mongoose middlewares >=======================
@@ -71,6 +76,12 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
+// -------------< Query middleware >-------------
+userSchema.pre(/^find.*/g, function(next) {
+  this.find({ active: { $ne: false } })
+  next();
+})
+
 // =======================< Schema instance methods >=======================
 userSchema.methods.comparePassword = async function (
   inputPassword,
@@ -100,8 +111,6 @@ userSchema.methods.createPasswordResetToken = function () {
     .digest('hex');
 
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // Add extra 10 minutes in miliseconds (minutes * seconds * miliseconds)
-
-  console.log({ resetToken }, this.passwordResetToken);
 
   return resetToken;
 };

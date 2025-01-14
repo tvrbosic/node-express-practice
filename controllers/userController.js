@@ -70,7 +70,16 @@ exports.updateUser = (req, res) => {
   });
 };
 
-exports.deleteUser = (req, res) => {
+exports.deleteAuthenticatedUser = catchAsync(async (req, res, next) => {
+  await User.findByIdAndUpdate(req.user.id, { active: false})
+
+  res.status(204).json({
+    status: 'success',
+    data: null
+  })
+})
+
+exports.deleteUser = (req, res) => { 
   res.status(500).json({
     status: 'error',
     message: 'This route is not yet defined!',
